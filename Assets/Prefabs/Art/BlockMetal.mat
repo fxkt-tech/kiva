@@ -46,6 +46,7 @@ Material:
     - _Depth: 0.041
     - _Finish: 2
     - _LocalMapping: 0
+    - _MetalHighlight: 1.65
     - _TilesPerMetre: 0.6666667
     m_Colors: []
   m_BuildTextureStacks: []

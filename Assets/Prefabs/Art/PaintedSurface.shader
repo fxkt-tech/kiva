@@ -6,6 +6,8 @@ Shader "Kiva/Painted Surface"
         _TilesPerMetre ("Texture repeats per metre", Float) = 0.3
         [KeywordEnum(Plaster, Rock, Metal, Crystal)] _Finish ("Surface finish", Float) = 0
         _FinishMap ("Metal roughness / crystal inclusions", 2D) = "gray" {}
+        _MetalHighlight ("Metal highlight strength", Range(0, 3)) = 1
+        _CrystalEdgeColor ("Crystal edge tint", Color) = (0.90, 0.73, 1.0, 1)
         [Normal] _BumpMap ("Surface normal", 2D) = "bump" {}
         _HeightMap ("Rock height", 2D) = "gray" {}
         _Depth ("Parallax depth", Range(0,0.08)) = 0.035
@@ -43,6 +45,8 @@ Shader "Kiva/Painted Surface"
             TEXTURE2D(_FinishMap);
             CBUFFER_START(UnityPerMaterial)
                 float _TilesPerMetre;
+                half _MetalHighlight;
+                half4 _CrystalEdgeColor;
                 float _Depth;
                 float _LocalMapping;
             CBUFFER_END
@@ -95,11 +99,12 @@ Shader "Kiva/Painted Surface"
                     float response = DV_SmithJointGGXAniso(dot(t,h), dot(b,h), saturate(dot(normal,h)),
                         dot(t,view), dot(b,view), max(0.02h,dot(normal,view)),
                         dot(t,light.direction), dot(b,light.direction), nDotL,
-                        max(0.10h,brdf.roughness * 1.8h), max(0.07h,brdf.roughness * 0.7h));
+                        max(0.19h,brdf.roughness * 2.4h), max(0.065h,brdf.roughness * 0.65h));
+                    response = min(response, 10.0) * _MetalHighlight;
                 #else
-                    float response = DirectBRDFSpecular(brdf, normal, light.direction, view);
+                    float response = min(DirectBRDFSpecular(brdf, normal, light.direction, view), 10.0);
                 #endif
-                return brdf.specular * min(response, 10.0) * nDotL * light.color
+                return brdf.specular * response * nDotL * light.color
                     * light.distanceAttenuation * light.shadowAttenuation;
             }
             #endif
@@ -134,17 +139,22 @@ Shader "Kiva/Painted Surface"
                         half metallic = 0.88h;
                         half smoothness = 1.0h - mask;
                     #else
-                        // Parallax only the interior paint. The polished facet stays at the surface.
-                        float2 innerUV = uv + viewAlongFace * (0.035 + 0.085 * mask);
+                        // Cleavage lines behind a polished facet shift with view and facet tilt.
+                        float2 innerUV = uv + (viewAlongFace + 0.18h * bump.xy) * _Depth * (0.3h + mask);
                         half3 interior = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, innerUV).rgb;
-                        half strata = SAMPLE_TEXTURE2D(_FinishMap, sampler_BaseMap, innerUV).r;
-                        pigment = lerp(pigment, interior * half3(0.77h, 0.86h, 1.16h), 0.6h * strata);
+                        half2 strata = SAMPLE_TEXTURE2D(_FinishMap, sampler_BaseMap, innerUV).rg;
+                        pigment = lerp(pigment, interior * half3(0.94h, 0.79h, 1.04h), 0.30h + 0.34h * strata.r);
                         half metallic = 0.0h;
                         half smoothness = 0.64h + 0.17h * mask;
                     #endif
                     BRDFData brdf;
                     half alpha = 1;
-                    InitializeBRDFData(pigment, metallic, half3(0,0,0), smoothness, alpha, brdf);
+                    half3 reflectance = pigment;
+                    #if defined(_FINISH_METAL)
+                        // Dark brush marks in the colour map still reflect light as bare steel.
+                        reflectance = lerp(pigment, half3(0.55h, 0.57h, 0.59h), 0.68h);
+                    #endif
+                    InitializeBRDFData(reflectance, metallic, half3(0,0,0), smoothness, alpha, brdf);
                     half3 reflection = GlossyEnvironmentReflection(reflect(-view, normal), i.world,
                         brdf.perceptualRoughness, 1.0h, GetNormalizedScreenSpaceUV(i.clip));
                     half3 shine = reflection * EnvironmentBRDFSpecular(brdf, fresnel)
@@ -166,8 +176,8 @@ Shader "Kiva/Painted Surface"
                 #if defined(_FINISH_METAL)
                     return half4(pigment * lighting * 0.51h + shine, 1);
                 #elif defined(_FINISH_CRYSTAL)
-                    half3 rim = fresnel * half3(0.05h, 0.31h, 0.27h);
-                    return half4(pigment * lighting + shine + rim, 1);
+                    half3 glints = _CrystalEdgeColor.rgb * (0.23h * fresnel + strata.g * (0.10h + 0.18h * fresnel));
+                    return half4(pigment * lighting + shine + glints, 1);
                 #elif !defined(_FINISH_ROCK) && !defined(_ROCK_RELIEF)
                     // Preserve white-on-white brushwork even directly under a point light.
                     half3 highlights = max(lighting - 0.68h, 0.0h);

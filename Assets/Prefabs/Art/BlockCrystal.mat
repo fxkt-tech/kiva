@@ -41,7 +41,8 @@ Material:
     m_Floats:
     - _TilesPerMetre: 0.6666667
     - _Finish: 3
-    - _Depth: 0.041
-    m_Colors: []
+    - _Depth: 0.072
+    m_Colors:
+    - _CrystalEdgeColor: {r: 0.90, g: 0.73, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
