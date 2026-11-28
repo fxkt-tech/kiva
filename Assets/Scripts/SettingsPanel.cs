@@ -14,15 +14,13 @@ public sealed class SettingsPanel : MonoBehaviour
     static readonly Color BodyInk=new Color(.245f,.175f,.25f);
     static readonly Color Notes=new Color(.355f,.29f,.37f);
     static readonly Color Gilt=new Color(.66f,.48f,.28f);
-    static readonly Rect RibbonUv=new Rect(705/1536f,1-670/1024f,781/1536f,187/1024f);
-    static readonly Rect PaperSignUv=new Rect(2/1536f,1-1007/1024f,760/1536f,212/1024f);
 
     [SerializeField] RectTransform page;
     RectTransform rows,footer;
     CanvasGroup controls;
     ScrollRect scroll;
     Text timer;
-    [SerializeField] Texture2D paperSigns,workshopView;
+    [SerializeField] Texture2D workshopView;
     Action resume,leave;
     bool pending;
     float deadline;
@@ -125,9 +123,8 @@ public sealed class SettingsPanel : MonoBehaviour
             var hit=Panel(content,name,47,250+76*i,228,61,new Color(0,0,0,.006f));
             var tab=SelectableButton(hit,()=>{if(category!=name){category=name;Draw();}});
             tab.transition=Selectable.Transition.None;
-            var ribbon=Art(hit.transform,"绢签",paperSigns,0,0,228,61,false);
-            ribbon.uvRect=RibbonUv;
-            ribbon.color=chosen?new Color(1,.93f,1):new Color(.77f,.67f,.88f,.44f);
+            var tabFace=Panel(hit.transform,"底色",0,0,228,61,chosen?new Color(.28f,.22f,.37f):new Color(.16f,.14f,.23f));
+            Frame(tabFace.transform,228,61,chosen?Gilt:new Color(.59f,.54f,.63f,.45f));
             var tint=chosen?MenuIvory:new Color(.91f,.85f,.91f);
             Mark(hit.transform,43,23,chosen,true);
             var label=Label(hit.transform,name,73,1,121,58,29,tint,Hand);
@@ -143,9 +140,8 @@ public sealed class SettingsPanel : MonoBehaviour
         var hit=Panel(parent,name,x,y,w,h,new Color(0,0,0,.006f));
         var button=SelectableButton(hit,action);
         button.transition=Selectable.Transition.None;
-        var skin=Art(hit.transform,"纸签",paperSigns,0,0,w,h,false);
-        skin.uvRect=PaperSignUv;
-        skin.color=primary?new Color(1,.96f,.84f):new Color(.89f,.84f,.86f);
+        var face=Panel(hit.transform,"底色",0,0,w,h,primary?new Color(.85f,.78f,.91f):new Color(.91f,.88f,.91f));
+        Frame(face.transform,w,h,Gilt);
         Label(hit.transform,name,10,0,w-20,h,primary?25:20,BodyInk,Hand,TextAnchor.MiddleCenter);
         FocusGlint(button,w,h);
         return button;
@@ -387,7 +383,9 @@ public sealed class SettingsPanel : MonoBehaviour
         resume();
     }
 
-    public void Close()
+    public void Close() => gameObject.SetActive(false);
+
+    void OnDisable()
     {
         if(pending)
         {
@@ -395,7 +393,6 @@ public sealed class SettingsPanel : MonoBehaviour
             GameSettings.Current.Save();
             pending=false;
         }
-        gameObject.SetActive(false);
     }
 
     void Update()

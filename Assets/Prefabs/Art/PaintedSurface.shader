@@ -27,10 +27,7 @@ Shader "Kiva/Painted Surface"
             #pragma shader_feature_local_fragment _ _FINISH_PLASTER _FINISH_ROCK _FINISH_METAL _FINISH_CRYSTAL _ROCK_RELIEF
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_ATLAS
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-            #pragma multi_compile _ _ADDITIONAL_LIGHTS
-            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             #if defined(_FINISH_METAL) || defined(_FINISH_CRYSTAL)
@@ -87,27 +84,38 @@ Shader "Kiva/Painted Surface"
                 return o;
             }
 
-            #if defined(POLISHED_SURFACE)
-            half3 Highlight(Light light, BRDFData brdf, half3 normal, half3 tangent, half3 view)
+            struct SurfaceShading
             {
-                half nDotL = saturate(dot(normal, light.direction));
+                half3 normal;
+                #if defined(POLISHED_SURFACE)
+                    half3 view;
+                    BRDFData brdf;
+                    #if defined(_FINISH_METAL)
+                        half3 tangent;
+                    #endif
+                #endif
+            };
+
+            half3 SurfaceSpecular(SurfaceShading s, half3 direction)
+            {
                 #if defined(_FINISH_METAL)
                     // The brush direction stretches the specular lobe along the grain.
-                    half3 t = normalize(tangent - normal * dot(normal, tangent));
-                    half3 b = cross(normal, t);
-                    half3 h = SafeNormalize(view + light.direction);
-                    float response = DV_SmithJointGGXAniso(dot(t,h), dot(b,h), saturate(dot(normal,h)),
-                        dot(t,view), dot(b,view), max(0.02h,dot(normal,view)),
-                        dot(t,light.direction), dot(b,light.direction), nDotL,
-                        max(0.19h,brdf.roughness * 2.4h), max(0.065h,brdf.roughness * 0.65h));
-                    response = min(response, 10.0) * _MetalHighlight;
+                    half3 t = normalize(s.tangent - s.normal * dot(s.normal, s.tangent));
+                    half3 b = cross(s.normal, t);
+                    half3 h = SafeNormalize(s.view + direction);
+                    float response = DV_SmithJointGGXAniso(dot(t,h), dot(b,h), saturate(dot(s.normal,h)),
+                        dot(t,s.view), dot(b,s.view), max(0.02h,dot(s.normal,s.view)),
+                        dot(t,direction), dot(b,direction), saturate(dot(s.normal,direction)),
+                        max(0.19h,s.brdf.roughness * 2.4h), max(0.065h,s.brdf.roughness * 0.65h));
+                    return s.brdf.specular * min(response, 10.0) * _MetalHighlight;
+                #elif defined(_FINISH_CRYSTAL)
+                    return s.brdf.specular * min(DirectBRDFSpecular(s.brdf, s.normal, direction, s.view), 10.0);
                 #else
-                    float response = min(DirectBRDFSpecular(brdf, normal, light.direction, view), 10.0);
+                    return 0;
                 #endif
-                return brdf.specular * response * nDotL * light.color
-                    * light.distanceAttenuation * light.shadowAttenuation;
             }
-            #endif
+
+            #include_with_pragmas "SurfaceLighting.hlsl"
 
             half4 Frag(Varyings i) : SV_Target
             {
@@ -129,9 +137,10 @@ Shader "Kiva/Painted Surface"
                     normal = normalize(i.tangent * bump.x + i.bitangent * bump.y + normal * bump.z);
                 #endif
                 half3 pigment = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb;
-                Light sun = GetMainLight(TransformWorldToShadowCoord(i.world));
-                half facing = saturate(dot(normal, sun.direction));
-                half3 lighting = half3(0.52, 0.56, 0.67) + sun.color * (0.54 * facing * sun.shadowAttenuation);
+                SurfaceShading surface;
+                surface.normal = normal;
+                float2 screenUV = GetNormalizedScreenSpaceUV(i.clip);
+                half occlusion = GetScreenSpaceAmbientOcclusion(screenUV).indirectAmbientOcclusion;
                 #if defined(POLISHED_SURFACE)
                     half mask = SAMPLE_TEXTURE2D(_FinishMap, sampler_BaseMap, uv).r;
                     half fresnel = Pow4(1.0h - saturate(dot(normal, view)));
@@ -147,31 +156,23 @@ Shader "Kiva/Painted Surface"
                         half metallic = 0.0h;
                         half smoothness = 0.64h + 0.17h * mask;
                     #endif
-                    BRDFData brdf;
                     half alpha = 1;
                     half3 reflectance = pigment;
                     #if defined(_FINISH_METAL)
                         // Dark brush marks in the colour map still reflect light as bare steel.
                         reflectance = lerp(pigment, half3(0.55h, 0.57h, 0.59h), 0.68h);
+                        surface.tangent = i.tangent;
                     #endif
-                    InitializeBRDFData(reflectance, metallic, half3(0,0,0), smoothness, alpha, brdf);
-                    half3 reflection = GlossyEnvironmentReflection(reflect(-view, normal), i.world,
-                        brdf.perceptualRoughness, 1.0h, GetNormalizedScreenSpaceUV(i.clip));
-                    half3 shine = reflection * EnvironmentBRDFSpecular(brdf, fresnel)
-                                + Highlight(sun, brdf, normal, i.tangent, view);
+                    surface.view = view;
+                    InitializeBRDFData(reflectance, metallic, half3(0,0,0), smoothness, alpha, surface.brdf);
                 #endif
-                #if defined(_ADDITIONAL_LIGHTS)
-                    InputData inputData = (InputData)0;
-                    inputData.positionWS = i.world;
-                    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(i.clip);
-                    uint count = GetAdditionalLightsCount();
-                    LIGHT_LOOP_BEGIN(count)
-                        Light lamp = GetAdditionalLight(lightIndex, i.world);
-                        lighting += lamp.color * lamp.distanceAttenuation * saturate(dot(normal, lamp.direction));
-                        #if defined(POLISHED_SURFACE)
-                            shine += Highlight(lamp, brdf, normal, i.tangent, view);
-                        #endif
-                    LIGHT_LOOP_END
+                half3 lighting, shine;
+                SurfaceDirectLighting(i.world, screenUV, surface, lighting, shine);
+                lighting += SampleSH(normal) * occlusion;
+                #if defined(POLISHED_SURFACE)
+                    half3 reflection = GlossyEnvironmentReflection(reflect(-view, normal), i.world,
+                        surface.brdf.perceptualRoughness, occlusion, screenUV);
+                    shine += reflection * EnvironmentBRDFSpecular(surface.brdf, fresnel);
                 #endif
                 #if defined(_FINISH_METAL)
                     return half4(pigment * lighting * 0.51h + shine, 1);

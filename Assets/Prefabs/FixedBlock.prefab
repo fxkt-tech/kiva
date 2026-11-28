@@ -421,6 +421,8 @@ MonoBehaviour:
   rock: {fileID: 2100000, guid: de60bee4c2b344aabb3b4074f8866af5, type: 2}
   metal: {fileID: 2100000, guid: ace41db7370448b09246f407f54228b0, type: 2}
   crystal: {fileID: 2100000, guid: 544bf641a3b744bda56bafe72c02ff1c, type: 2}
+  water: {fileID: 2100000, guid: 5ce1187657834ec493db9a5993ec0217, type: 2}
+  glass: {fileID: 2100000, guid: e72dde7769cc432fb11b2f02e50e3fad, type: 2}
   faces: 0
 --- !u!1 &4475861360679809775
 GameObject:

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public sealed class WorkshopMotor : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public sealed class WorkshopMotor : MonoBehaviour
     public bool Gliding { get; private set; }
     public float Yaw { get; private set; }
     float pitch,roll;
+    float footRadius;
     bool jump,glideHeld,steerJump;
     Vector2 movement;
     Vector3 exitStart;
@@ -26,7 +28,9 @@ public sealed class WorkshopMotor : MonoBehaviour
     {
         portals = pair;
         Body = GetComponent<Rigidbody>();
+        footRadius = GetComponent<CapsuleCollider>().radius;
         Eyes = GetComponentInChildren<Camera>(true);
+        Eyes.GetUniversalAdditionalCameraData().requiresColorTexture = true;
     }
 
     public void Equip(WorkshopGear inventory){
@@ -67,12 +71,21 @@ public sealed class WorkshopMotor : MonoBehaviour
     public void Step()
     {
         var velocity=Body.linearVelocity;
-        Grounded=velocity.y<=.15f && Physics.Raycast(Body.position,Vector3.down,HalfHeight+.085f,~0,QueryTriggerInteraction.Ignore);
+        const float groundMargin=.085f, minGroundNormalY=.62f;
+        float reach=HalfHeight+groundMargin+footRadius*(1f/minGroundNormalY-1f);
+        Grounded=Physics.Raycast(Body.position,Vector3.down,out var ground,reach,~0,QueryTriggerInteraction.Ignore)
+            && ground.normal.y>=minGroundNormalY && Vector3.Dot(velocity,ground.normal)<=.15f
+            && ground.distance<=HalfHeight+groundMargin+footRadius*(1f/ground.normal.y-1f);
         var walk=Quaternion.Euler(0,Yaw,0)*new Vector3(movement.x,0,movement.y);
         var horizontal=new Vector3(velocity.x,0,velocity.z);
         if(Grounded){
             glideHeld=steerJump=false;
-            horizontal=Vector3.MoveTowards(horizontal,walk*4.8f,27*Time.fixedDeltaTime);
+            // A capsule rides higher above a slope. Drive along its support plane
+            // so climbing a ramp does not count as launching into the air.
+            var along=Vector3.ProjectOnPlane(velocity,ground.normal);
+            var target=Vector3.ProjectOnPlane(walk,ground.normal).normalized*(walk.magnitude*4.8f);
+            velocity+=Vector3.MoveTowards(along,target,27*Time.fixedDeltaTime)-along;
+            horizontal=new Vector3(velocity.x,0,velocity.z);
             if(jump){velocity.y=Mathf.Sqrt(2*.9f*Mathf.Abs(Physics.gravity.y));steerJump=true;}
         }else if((steerJump || glideHeld) && movement.sqrMagnitude>.01f){
             // Retain launch momentum; bank towards the chosen direction while gliding.

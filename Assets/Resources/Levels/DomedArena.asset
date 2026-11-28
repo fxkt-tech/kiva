@@ -1,0 +1,342 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: DomedArena
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
+  stageId: arena/domed-court
+  title: "\u7A79\u5EAD\u6597\u517D\u573A"
+  description: "\u8D70\u8FC7\u5357\u95E8\uFF0C\u5728\u73BB\u7483\u7A79\u9876\u4E0B\u7A7F\u8FC7\u6BD4\u6597\u573A\uFF0C\u767B\u4E0A\u5317\u770B\u53F0\u3002"
+  locationName: "\u7A79\u5EAD\u6597\u517D\u573A"
+  architecture: {fileID: 1896685484786961399, guid: a2caf4716d6a63d49bd13358bf72f239, type: 3}
+  skybox: {fileID: 2100000, guid: 98c54a5f06168d8458d25175532e874c, type: 2}
+  fixedBricks:
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -1, y: -1, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 512
+  - label: "\u573A\u5730"
+    start: {x: 1, y: -1, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -4, y: -1, z: -4}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -1, y: -1, z: -4}
+    size: {x: 2, y: 1, z: 1}
+    faces: 32776
+  - label: "\u573A\u5730"
+    start: {x: 1, y: -1, z: -4}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: -3}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: -3}
+    size: {x: 6, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: -3}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: -2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: -2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: -2, y: -1, z: -2}
+    size: {x: 4, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 2, y: -1, z: -2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: -2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: -1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: -2, y: -1, z: -1}
+    size: {x: 4, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 2, y: -1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: -1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: 0}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: 0}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: -2, y: -1, z: 0}
+    size: {x: 4, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 2, y: -1, z: 0}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: 0}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: 1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: -2, y: -1, z: 1}
+    size: {x: 4, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 2, y: -1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 32768
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: 1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -5, y: -1, z: 2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: 2}
+    size: {x: 6, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 3, y: -1, z: 2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -4, y: -1, z: 3}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -1, y: -1, z: 3}
+    size: {x: 2, y: 1, z: 1}
+    faces: 8
+  - label: "\u573A\u5730"
+    start: {x: 1, y: -1, z: 3}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u573A\u5730"
+    start: {x: -3, y: -1, z: 4}
+    size: {x: 6, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -3, y: 0, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 1, y: 0, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -4, y: 0, z: -4}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 1, y: 0, z: -4}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: -3}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: -3}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: -2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: -2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: -1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: -1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: 0}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: 0}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: 1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: 1}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 0, z: 2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 0, z: 2}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -4, y: 0, z: 3}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 1, y: 0, z: 3}
+    size: {x: 3, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -3, y: 0, z: 4}
+    size: {x: 6, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -3, y: 1, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 1, y: 1, z: -5}
+    size: {x: 2, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -4, y: 1, z: -4}
+    size: {x: 1, y: 1, z: 1}
+    faces: 520
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 1, z: -4}
+    size: {x: 1, y: 1, z: 1}
+    faces: 520
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: -3}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: -3}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: -2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: -2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: 0}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: 0}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -5, y: 1, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: 4, y: 1, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -4, y: 1, z: 3}
+    size: {x: 1, y: 1, z: 1}
+    faces: 520
+  - label: "\u770B\u53F0"
+    start: {x: 3, y: 1, z: 3}
+    size: {x: 1, y: 1, z: 1}
+    faces: 520
+  - label: "\u770B\u53F0"
+    start: {x: -3, y: 1, z: 4}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  - label: "\u770B\u53F0"
+    start: {x: -2, y: 1, z: 4}
+    size: {x: 4, y: 1, z: 1}
+    faces: 8
+  - label: "\u770B\u53F0"
+    start: {x: 2, y: 1, z: 4}
+    size: {x: 1, y: 1, z: 1}
+    faces: 0
+  physicalBricks: []
+  spawnFeet: {x: 0, y: 0, z: -5.86}
+  checkpointFeet: {x: 0, y: 0, z: -5.86}
+  exitFeet: {x: 0, y: 0, z: 0}
+  spawnYaw: 0
+  checkpointYaw: 0
+  supplyZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  exitZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  startingGear: 1
+  supplyGear: 0
+  entryHint: 
+  supplyHint: 
+  retryHint: 

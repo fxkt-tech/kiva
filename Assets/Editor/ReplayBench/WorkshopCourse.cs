@@ -57,6 +57,8 @@ internal static class WorkshopCourse
         if (r.Has(WorkshopModule.Rock)) finishes.Add(SurfaceKind.Rock);
         if (r.Has(WorkshopModule.Metal)) finishes.Add(SurfaceKind.Metal);
         if (r.Has(WorkshopModule.Crystal)) finishes.Add(SurfaceKind.Crystal);
+        if (r.Has(WorkshopModule.Water)) finishes.Add(SurfaceKind.Water);
+        if (r.Has(WorkshopModule.Glass)) finishes.Add(SurfaceKind.Glass);
         if (finishes.Count == 0) finishes.Add(SurfaceKind.Plaster);
         BlockFaces Paint(BlockFaces authored, int index)
         {

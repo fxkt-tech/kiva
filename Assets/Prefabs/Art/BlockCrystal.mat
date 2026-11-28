@@ -37,12 +37,19 @@ Material:
         m_Texture: {fileID: 2800000, guid: 62e872f98cc1531d829f049b900168ea, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _TilesPerMetre: 0.6666667
-    - _Finish: 3
     - _Depth: 0.072
+    - _Finish: 3
+    - _LocalMapping: 0
+    - _MetalHighlight: 1
+    - _PlasterJointWidth: 0.028
+    - _TilesPerMetre: 0.6666667
     m_Colors:
-    - _CrystalEdgeColor: {r: 0.90, g: 0.73, b: 1, a: 1}
+    - _CrystalEdgeColor: {r: 0.9, g: 0.73, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

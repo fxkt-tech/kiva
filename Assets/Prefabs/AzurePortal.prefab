@@ -295,6 +295,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6033792424329110553}
   - component: {fileID: 1587082056453948111}
+  - component: {fileID: 8072519271069220426}
   m_Layer: 9
   m_Name: AzurePortal
   m_TagString: Untagged
@@ -335,3 +336,24 @@ MonoBehaviour:
   paper: {fileID: 2100000, guid: 9ec3f90786ee0dc4b8ca43f34fa9c726, type: 2}
   windowShader: {fileID: 4800000, guid: 06682927b5523a64ba618f93e94732f1, type: 3}
   surface: {fileID: 7911775280237249824}
+--- !u!135 &8072519271069220426
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589650741309533116}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

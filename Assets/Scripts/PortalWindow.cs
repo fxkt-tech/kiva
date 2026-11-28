@@ -66,6 +66,7 @@ public sealed class PortalWindow : MonoBehaviour
         camera.allowHDR=true;
         var data=camera.GetUniversalAdditionalCameraData();
         data.renderPostProcessing=false;
+        data.requiresColorTexture=player.GetUniversalAdditionalCameraData().requiresColorTexture;
         data.volumeLayerMask=player.GetUniversalAdditionalCameraData().volumeLayerMask;
         var display=new Material(windowShader);
         display.SetFloat("_ClampNearPlane",depth==1?1:0);

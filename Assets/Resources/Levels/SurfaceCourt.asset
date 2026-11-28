@@ -14,41 +14,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
   stageId: workshop/surface-court
   title: "材质试场"
-  description: "四种材质从地面延伸到北墙，各占三格宽。"
+  description: "六种材质从地面延伸到北墙，各占三格宽。"
   locationName: "材质试场"
   fixedBricks:
   - label: "地板 · 金属面"
-    start: {x: -6, y: -1, z: -3}
+    start: {x: -9, y: -1, z: -3}
     size: {x: 3, y: 1, z: 6}
     faces: 4032
   - label: "地板 · 岩石面"
-    start: {x: -3, y: -1, z: -3}
+    start: {x: -6, y: -1, z: -3}
     size: {x: 3, y: 1, z: 6}
     faces: 0
   - label: "地板 · 白面"
-    start: {x: 0, y: -1, z: -3}
+    start: {x: -3, y: -1, z: -3}
     size: {x: 3, y: 1, z: 6}
     faces: 63
   - label: "地板 · 水晶面"
-    start: {x: 3, y: -1, z: -3}
+    start: {x: 0, y: -1, z: -3}
     size: {x: 3, y: 1, z: 6}
     faces: 4095
+  - label: "地板 · 清水面"
+    start: {x: 3, y: -1, z: -3}
+    size: {x: 3, y: 1, z: 6}
+    faces: 258048
+  - label: "地板 · 玻璃面"
+    start: {x: 6, y: -1, z: -3}
+    size: {x: 3, y: 1, z: 6}
+    faces: 258111
   - label: "北墙 · 金属面"
-    start: {x: -6, y: 0, z: 3}
+    start: {x: -9, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
     faces: 4032
   - label: "北墙 · 岩石面"
-    start: {x: -3, y: 0, z: 3}
+    start: {x: -6, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
     faces: 0
   - label: "北墙 · 白面"
-    start: {x: 0, y: 0, z: 3}
+    start: {x: -3, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
     faces: 63
   - label: "北墙 · 水晶面"
-    start: {x: 3, y: 0, z: 3}
+    start: {x: 0, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
     faces: 4095
+  - label: "北墙 · 清水面"
+    start: {x: 3, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    faces: 258048
+  - label: "北墙 · 玻璃面"
+    start: {x: 6, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    faces: 258111
   physicalBricks: []
   spawnFeet: {x: 0, y: 0, z: 0}
   checkpointFeet: {x: 0, y: 0, z: 0}

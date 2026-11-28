@@ -19,6 +19,7 @@ public sealed class WorkshopLayout : MonoBehaviour
     public void Populate(WorkshopLevel source, Func<GameObject, Transform, GameObject> create)
     {
         definition = source;
+        if (source.architecture) create(source.architecture, transform);
         Place(spawn, source.spawnFeet, source.spawnYaw);
         if (source.supplyZone.size.sqrMagnitude > 0)
         {

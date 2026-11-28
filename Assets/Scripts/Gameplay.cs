@@ -1,55 +1,55 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public sealed class Gameplay : MonoBehaviour
 {
     [SerializeField] FerryPuzzle level;
     [SerializeField] WorkshopLayout layout;
-    [SerializeField] WorkshopHud hud;
-    [SerializeField] SettingsPanel settings;
-    GameObject priorFocus;
+    static WorkshopLayout requestedStage;
+
+    public static void LoadStage(WorkshopLayout prefab)
+    {
+        requestedStage = prefab;
+        SceneManager.LoadSceneAsync(nameof(Gameplay));
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ClearSelection() => requestedStage = null;
+
+    void Awake() => level.gameObject.SetActive(false);
 
     void Start()
     {
         GameSettings.Current.Apply();
-        hud.GetComponentInChildren<Button>(true).onClick.AddListener(TogglePause);
-        level.Build(hud, layout, ReturnToLobby, PauseChanged);
+        if (requestedStage && requestedStage.Definition != layout.Definition)
+        {
+            var previous = layout;
+            previous.gameObject.SetActive(false);
+            layout = Instantiate(requestedStage, previous.transform.parent);
+            Destroy(previous.gameObject);
+        }
+        requestedStage = null;
+        UIManager.Instance.Show<BattleUI>(this, Begin);
+    }
+
+    void Begin(BattleUI ui)
+    {
+        ui.Bind(TogglePause, ReturnToLobby, layout.Definition.title);
+        level.gameObject.SetActive(true);
+        level.Build(ui.Hud, layout, ReturnToLobby, ui.SetPaused);
         level.Begin();
     }
 
-    public void TogglePause() => level.TogglePause();
-
-    void Update()
+    public void TogglePause()
     {
-        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
-        if (settings.gameObject.activeSelf) settings.Back();
-        else TogglePause();
-    }
-
-    void PauseChanged(bool paused)
-    {
-        hud.GetComponent<CanvasGroup>().interactable = !paused;
-        if (paused)
-        {
-            priorFocus = EventSystem.current.currentSelectedGameObject;
-            settings.Open(level.Resume, ReturnToLobby, layout.Definition.title);
-        }
-        else
-        {
-            settings.Close();
-            EventSystem.current.SetSelectedGameObject(priorFocus);
-        }
+        if (enabled && level.isActiveAndEnabled) level.TogglePause();
     }
 
     void ReturnToLobby()
     {
         if (!enabled) return;
         enabled = false;
-        settings.Close();
-        hud.gameObject.SetActive(false);
+        UIManager.Instance.Release(gameObject.scene);
         level.gameObject.SetActive(false);
         SceneManager.LoadSceneAsync(nameof(Lobby));
     }

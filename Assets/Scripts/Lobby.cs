@@ -1,22 +1,19 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public sealed class Lobby : MonoBehaviour
 {
-    [SerializeField] Button storyDoor;
-
     void Start()
     {
         GameSettings.Current.Apply();
         GameSettings.Current.ApplyDisplay();
-        NightUi.Focus(storyDoor);
+        UIManager.Instance.Show<LobbyUI>(this, ui => ui.Bind(Play));
     }
 
-    public void Play()
+    void Play(WorkshopLayout stage)
     {
-        if (!storyDoor.interactable) return;
-        storyDoor.interactable = false;
-        SceneManager.LoadSceneAsync(nameof(Gameplay));
+        if (!enabled) return;
+        enabled = false;
+        UIManager.Instance.Release(gameObject.scene);
+        Gameplay.LoadStage(stage);
     }
 }

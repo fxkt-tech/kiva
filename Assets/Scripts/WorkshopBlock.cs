@@ -5,7 +5,7 @@ using UnityEngine;
 public sealed class WorkshopBlock : MonoBehaviour
 {
     [SerializeField] MeshRenderer[] surfaces;
-    [SerializeField] Material plaster, rock, metal, crystal;
+    [SerializeField] Material plaster, rock, metal, crystal, water, glass;
     [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("white")] BlockFaces faces;
     public BlockFaces Faces => faces;
 
@@ -18,6 +18,8 @@ public sealed class WorkshopBlock : MonoBehaviour
                 SurfaceKind.Plaster => plaster,
                 SurfaceKind.Metal => metal,
                 SurfaceKind.Crystal => crystal,
+                SurfaceKind.Water => water,
+                SurfaceKind.Glass => glass,
                 _ => rock
             };
     }
@@ -25,7 +27,15 @@ public sealed class WorkshopBlock : MonoBehaviour
     public void HideInternalFaces(Vector3Int cell, Dictionary<Vector3Int, BlockFaces> occupied)
     {
         for (int side = 0; side < surfaces.Length; side++)
-            surfaces[side].forceRenderingOff = occupied.ContainsKey(cell + PaperTerrain.Neighbour(side));
+        {
+            bool hidden = false;
+            if (occupied.TryGetValue(cell + PaperTerrain.Neighbour(side), out var neighbour))
+            {
+                var opposite = neighbour.At(side ^ 1);
+                hidden = !opposite.IsTransparent() || opposite == faces.At(side);
+            }
+            surfaces[side].forceRenderingOff = hidden;
+        }
     }
 
     public void AnchorMovingTexture()

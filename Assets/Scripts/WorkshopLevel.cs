@@ -29,6 +29,8 @@ public sealed class WorkshopLevel : ScriptableObject
 
     public string title, description;
     public string locationName;
+    public GameObject architecture;
+    public Material skybox;
     public BrickRegion[] fixedBricks=Array.Empty<BrickRegion>();
     public LooseBrick[] physicalBricks=Array.Empty<LooseBrick>();
     public Vector3 spawnFeet, checkpointFeet, exitFeet;

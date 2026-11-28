@@ -47,7 +47,9 @@ Material:
     - _Finish: 2
     - _LocalMapping: 0
     - _MetalHighlight: 1.65
+    - _PlasterJointWidth: 0.028
     - _TilesPerMetre: 0.6666667
-    m_Colors: []
+    m_Colors:
+    - _CrystalEdgeColor: {r: 0.9, g: 0.73, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

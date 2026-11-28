@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3718794635750887288}
   - component: {fileID: 2728442408311242021}
   m_Layer: 0
-  m_Name: "\u6708\u767D\u7EB8\u9762"
+  m_Name: "Settings Backdrop"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,14 +58,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.935, g: 0.925, b: 0.94, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: ab4d21bcc5b14179a478133c6242b0a8, type: 3}
+  m_Texture: {fileID: 0}
   m_UVRect:
     serializedVersion: 2
     x: 0.245
@@ -84,7 +84,7 @@ GameObject:
   - component: {fileID: 194731027067847497}
   - component: {fileID: 4450606109042256872}
   m_Layer: 0
-  m_Name: "\u7D2B\u7EE2\u4E66\u810A"
+  m_Name: "Category Backdrop"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -130,14 +130,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.15, g: 0.13, b: 0.205, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: ab4d21bcc5b14179a478133c6242b0a8, type: 3}
+  m_Texture: {fileID: 0}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -236,7 +236,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SettingsPanel
   page: {fileID: 7583245623299205152}
-  paperSigns: {fileID: 2800000, guid: c49b6b44e5dc4eb2ade21ed17fee3602, type: 3}
   workshopView: {fileID: 2800000, guid: d93b37243f7940189db30ec8d6a800ea, type: 3}
 --- !u!1 &8428018180325122184
 GameObject:
