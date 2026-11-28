@@ -6,7 +6,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasRenderer))]
 public sealed class SettingShape : MaskableGraphic
 {
-    public enum Kind { Diamond=0, Spark=3, Chevron=4, Hair=7, FoldTab=9, SoftShadow=11 }
+    public enum Kind { Diamond=0, Spark=3, Chevron=4, Hair=7, FoldTab=9, SoftShadow=11, SideFade=12 }
     public Kind kind;
     public Color second=Color.white,rim=Color.clear;
     public float rimWidth;
@@ -37,6 +37,13 @@ public sealed class SettingShape : MaskableGraphic
         var clear=new Color(color.r,color.g,color.b,0);
         Vector2[] points=null;
         switch(kind){
+            case Kind.SideFade:{
+                float bottom=y0+r.height*.2f,top=y1-r.height*.2f;
+                Color rightClear=new Color(second.r,second.g,second.b,0);
+                Quad(vh,new Vector2(x0,y0),new Vector2(x0,bottom),new Vector2(x1,bottom),new Vector2(x1,y0),clear,color,second,rightClear);
+                Quad(vh,new Vector2(x0,bottom),new Vector2(x0,top),new Vector2(x1,top),new Vector2(x1,bottom),color,color,second,second);
+                Quad(vh,new Vector2(x0,top),new Vector2(x0,y1),new Vector2(x1,y1),new Vector2(x1,top),color,clear,rightClear,second);
+                return;}
             case Kind.SoftShadow:{
                 vh.AddVert(r.center,color,Vector2.zero);
                 for(int i=0;i<32;i++){

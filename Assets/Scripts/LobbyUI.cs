@@ -9,6 +9,7 @@ public sealed class LobbyUI : SceneUI
     [SerializeField] CanvasGroup home;
     [SerializeField] LobbyLevelSelection selectionPrefab;
     LobbyLevelSelection selection;
+    bool choosing;
     Action<int> play;
 
     public void Bind(Action<int> onPlay)
@@ -28,21 +29,24 @@ public sealed class LobbyUI : SceneUI
         }
         home.interactable = home.blocksRaycasts = false;
         modeRail.SetActive(false);
-        selection.gameObject.SetActive(true);
-        selection.Focus();
+        choosing = true;
+        selection.Show(true, (RectTransform)mode.transform);
     }
 
     public override void Back()
     {
-        if (!selection || !selection.isActiveAndEnabled) return;
-        selection.gameObject.SetActive(false);
-        modeRail.SetActive(true);
-        home.interactable = home.blocksRaycasts = true;
-        NightUi.Focus(mode);
+        if (!choosing) return;
+        choosing = false;
+        selection.Show(false, (RectTransform)mode.transform, () =>
+        {
+            modeRail.SetActive(true);
+            home.interactable = home.blocksRaycasts = true;
+            NightUi.Focus(mode);
+        });
     }
 
     void PlayLevel(int sceneIndex)
     {
-        if (isActiveAndEnabled && selection.isActiveAndEnabled) play(sceneIndex);
+        if (isActiveAndEnabled && choosing) play(sceneIndex);
     }
 }
