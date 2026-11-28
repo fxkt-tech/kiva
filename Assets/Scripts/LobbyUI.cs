@@ -9,9 +9,9 @@ public sealed class LobbyUI : SceneUI
     [SerializeField] CanvasGroup home;
     [SerializeField] LobbyLevelSelection selectionPrefab;
     LobbyLevelSelection selection;
-    Action<WorkshopLayout> play;
+    Action<int> play;
 
-    public void Bind(Action<WorkshopLayout> onPlay)
+    public void Bind(Action<int> onPlay)
     {
         play = onPlay;
         mode.onClick.AddListener(OpenLevels);
@@ -41,8 +41,8 @@ public sealed class LobbyUI : SceneUI
         NightUi.Focus(mode);
     }
 
-    void PlayLevel(WorkshopLayout stage)
+    void PlayLevel(int sceneIndex)
     {
-        if (isActiveAndEnabled && selection.isActiveAndEnabled) play(stage);
+        if (isActiveAndEnabled && selection.isActiveAndEnabled) play(sceneIndex);
     }
 }

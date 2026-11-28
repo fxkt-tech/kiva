@@ -35,11 +35,6 @@ public sealed class FerryPuzzle : MonoBehaviour
         geometry = new WorkshopGeometry(stage);
         placement = new WorkshopPlacement(transform, windows, devices);
         motor.Bind(placement.Portals);
-        if (current.skybox)
-        {
-            RenderSettings.skybox = current.skybox;
-            motor.Eyes.clearFlags = CameraClearFlags.Skybox;
-        }
     }
 
     public void Begin()

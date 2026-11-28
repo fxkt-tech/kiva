@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public sealed class Lobby : MonoBehaviour
 {
@@ -9,11 +10,11 @@ public sealed class Lobby : MonoBehaviour
         UIManager.Instance.Show<LobbyUI>(this, ui => ui.Bind(Play));
     }
 
-    void Play(WorkshopLayout stage)
+    void Play(int sceneIndex)
     {
         if (!enabled) return;
         enabled = false;
         UIManager.Instance.Release(gameObject.scene);
-        Gameplay.LoadStage(stage);
+        SceneManager.LoadSceneAsync(sceneIndex);
     }
 }

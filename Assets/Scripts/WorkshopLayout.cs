@@ -41,7 +41,8 @@ public sealed class WorkshopLayout : MonoBehaviour
 
         foreach (var entry in cells)
         {
-            var block = create(fixedBlock.gameObject, transform).GetComponent<WorkshopBlock>();
+            var prefab = entry.Value.blockPrefab ? entry.Value.blockPrefab : fixedBlock;
+            var block = create(prefab.gameObject, transform).GetComponent<WorkshopBlock>();
             var cell = entry.Key;
             block.name = $"{entry.Value.label} ({cell.x},{cell.y},{cell.z})";
             block.transform.localPosition = ((Vector3)cell + Vector3.one * .5f) * PaperTerrain.Cell;

@@ -11,6 +11,7 @@ public struct BrickRegion
     public string label;
     public Vector3Int start, size;
     [FormerlySerializedAs("white")] public BlockFaces faces;
+    [Tooltip("留空时使用关卡的标准固定方块。")] public WorkshopBlock blockPrefab;
 }
 
 [Serializable]

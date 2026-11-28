@@ -14,318 +14,144 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
   stageId: arena/domed-court
   title: "\u7A79\u5EAD\u6597\u517D\u573A"
-  description: "\u8D70\u8FC7\u5357\u95E8\uFF0C\u5728\u73BB\u7483\u7A79\u9876\u4E0B\u7A7F\u8FC7\u6BD4\u6597\u573A\uFF0C\u767B\u4E0A\u5317\u770B\u53F0\u3002"
+  description: "\u6CBF\u5CA9\u77F3\u8DEF\u5411\u5317\u8D70\u5230\u6C34\u6C60\uFF0C\u62AC\u5934\u53EF\u4EE5\u770B\u89C1\u4E24\u5217\u60AC\u706F\u4E0E\u7ED5\u573A\u8FD0\u884C\u7684\u592A\u9633\u3002"
   locationName: "\u7A79\u5EAD\u6597\u517D\u573A"
-  architecture: {fileID: 1896685484786961399, guid: a2caf4716d6a63d49bd13358bf72f239, type: 3}
+  architecture: {fileID: 0}
   skybox: {fileID: 2100000, guid: 98c54a5f06168d8458d25175532e874c, type: 2}
   fixedBricks:
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: -5}
-    size: {x: 2, y: 1, z: 1}
+  - label: "\u767D\u77F3\u5EAD\u9762"
+    start: {x: -10, y: -1, z: -10}
+    size: {x: 20, y: 1, z: 20}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u5CA9\u77F3\u8DEF"
+    start: {x: -2, y: -1, z: -9}
+    size: {x: 4, y: 1, z: 13}
     faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -1, y: -1, z: -5}
-    size: {x: 2, y: 1, z: 1}
-    faces: 512
-  - label: "\u573A\u5730"
-    start: {x: 1, y: -1, z: -5}
-    size: {x: 2, y: 1, z: 1}
+    blockPrefab: {fileID: 0}
+  - label: "\u6C60\u5E95"
+    start: {x: -6, y: -2, z: 4}
+    size: {x: 12, y: 1, z: 5}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u6C34\u6C60"
+    start: {x: -6, y: -1, z: 4}
+    size: {x: 12, y: 1, z: 5}
+    faces: 258048
+    blockPrefab: {fileID: 0}
+  - label: "\u6C60\u6CBF"
+    start: {x: -7, y: -1, z: 4}
+    size: {x: 1, y: 1, z: 5}
     faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -4, y: -1, z: -4}
-    size: {x: 3, y: 1, z: 1}
+    blockPrefab: {fileID: 0}
+  - label: "\u6C60\u6CBF"
+    start: {x: 6, y: -1, z: 4}
+    size: {x: 1, y: 1, z: 5}
     faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -1, y: -1, z: -4}
-    size: {x: 2, y: 1, z: 1}
-    faces: 32776
-  - label: "\u573A\u5730"
-    start: {x: 1, y: -1, z: -4}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: -3}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: -3}
-    size: {x: 6, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: -3}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: -2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: -2}
+    blockPrefab: {fileID: 0}
+  - label: "\u91D1\u5C5E\u5899\u811A"
+    start: {x: -10, y: 0, z: -10}
+    size: {x: 1, y: 1, z: 20}
+    faces: 4032
+    blockPrefab: {fileID: 0}
+  - label: "\u767D\u5899"
+    start: {x: -10, y: 1, z: -10}
+    size: {x: 1, y: 7, z: 20}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u91D1\u5C5E\u5899\u811A"
+    start: {x: 9, y: 0, z: -10}
+    size: {x: 1, y: 1, z: 20}
+    faces: 4032
+    blockPrefab: {fileID: 0}
+  - label: "\u767D\u5899"
+    start: {x: 9, y: 1, z: -10}
+    size: {x: 1, y: 7, z: 20}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u91D1\u5C5E\u5899\u811A"
+    start: {x: -9, y: 0, z: -10}
+    size: {x: 18, y: 1, z: 1}
+    faces: 4032
+    blockPrefab: {fileID: 0}
+  - label: "\u767D\u5899"
+    start: {x: -9, y: 1, z: -10}
+    size: {x: 18, y: 7, z: 1}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u91D1\u5C5E\u5899\u811A"
+    start: {x: -9, y: 0, z: 9}
+    size: {x: 18, y: 1, z: 1}
+    faces: 4032
+    blockPrefab: {fileID: 0}
+  - label: "\u767D\u5899"
+    start: {x: -9, y: 1, z: 9}
+    size: {x: 18, y: 7, z: 1}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u5E73\u9876"
+    start: {x: -10, y: 8, z: -10}
+    size: {x: 20, y: 1, z: 20}
+    faces: 63
+    blockPrefab: {fileID: 0}
+  - label: "\u91C7\u5149\u9876"
+    start: {x: -8, y: 8, z: -9}
+    size: {x: 16, y: 1, z: 18}
+    faces: 258111
+    blockPrefab: {fileID: 0}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: -4, y: 6, z: -8}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: -2, y: -1, z: -2}
-    size: {x: 4, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 2, y: -1, z: -2}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: 3, y: 6, z: -8}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: -2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: -1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: -1}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: -4, y: 6, z: -4}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: -2, y: -1, z: -1}
-    size: {x: 4, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 2, y: -1, z: -1}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: 3, y: 6, z: -4}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: -1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: 0}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: 0}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: -4, y: 6, z: 0}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: -2, y: -1, z: 0}
-    size: {x: 4, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 2, y: -1, z: 0}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: 3, y: 6, z: 0}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: 0}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: 1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: 1}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: -4, y: 6, z: 4}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: -2, y: -1, z: 1}
-    size: {x: 4, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 2, y: -1, z: 1}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: 3, y: 6, z: 4}
     size: {x: 1, y: 1, z: 1}
-    faces: 32768
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: 1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -5, y: -1, z: 2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: 2}
-    size: {x: 6, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 3, y: -1, z: 2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -4, y: -1, z: 3}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -1, y: -1, z: 3}
-    size: {x: 2, y: 1, z: 1}
-    faces: 8
-  - label: "\u573A\u5730"
-    start: {x: 1, y: -1, z: 3}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u573A\u5730"
-    start: {x: -3, y: -1, z: 4}
-    size: {x: 6, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -3, y: 0, z: -5}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 1, y: 0, z: -5}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -4, y: 0, z: -4}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 1, y: 0, z: -4}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: -3}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: -3}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: -2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: -2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: -1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: -1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: 0}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: 0}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: 1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: 1}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 0, z: 2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 0, z: 2}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -4, y: 0, z: 3}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 1, y: 0, z: 3}
-    size: {x: 3, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -3, y: 0, z: 4}
-    size: {x: 6, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -3, y: 1, z: -5}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 1, y: 1, z: -5}
-    size: {x: 2, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -4, y: 1, z: -4}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: -4, y: 6, z: 8}
     size: {x: 1, y: 1, z: 1}
-    faces: 520
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 1, z: -4}
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
+  - label: "\u60AC\u7A7A\u706F\u5757"
+    start: {x: 3, y: 6, z: 8}
     size: {x: 1, y: 1, z: 1}
-    faces: 520
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: -3}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: -3}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: -2}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: -2}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: -1}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: -1}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: 0}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: 0}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: 1}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: 1}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -5, y: 1, z: 2}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: 4, y: 1, z: 2}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -4, y: 1, z: 3}
-    size: {x: 1, y: 1, z: 1}
-    faces: 520
-  - label: "\u770B\u53F0"
-    start: {x: 3, y: 1, z: 3}
-    size: {x: 1, y: 1, z: 1}
-    faces: 520
-  - label: "\u770B\u53F0"
-    start: {x: -3, y: 1, z: 4}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
-  - label: "\u770B\u53F0"
-    start: {x: -2, y: 1, z: 4}
-    size: {x: 4, y: 1, z: 1}
-    faces: 8
-  - label: "\u770B\u53F0"
-    start: {x: 2, y: 1, z: 4}
-    size: {x: 1, y: 1, z: 1}
-    faces: 0
+    faces: 4091
+    blockPrefab: {fileID: 3505238973461772124, guid: ff31a504e73e5e447a1a560426a70e8b, type: 3}
   physicalBricks: []
-  spawnFeet: {x: 0, y: 0, z: -5.86}
-  checkpointFeet: {x: 0, y: 0, z: -5.86}
+  spawnFeet: {x: 0, y: 0, z: -12.5}
+  checkpointFeet: {x: 0, y: 0, z: -12.5}
   exitFeet: {x: 0, y: 0, z: 0}
   spawnYaw: 0
   checkpointYaw: 0
@@ -337,6 +163,6 @@ MonoBehaviour:
     m_Extent: {x: 0, y: 0, z: 0}
   startingGear: 1
   supplyGear: 0
-  entryHint: 
-  supplyHint: 
-  retryHint: 
+  entryHint:
+  supplyHint:
+  retryHint:

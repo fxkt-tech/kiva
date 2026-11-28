@@ -280,6 +280,11 @@ public static class WorkshopReplayBench
         var layout=Instance<WorkshopLayout>("LayoutTemplate",puzzle.transform);
         layout.Populate(stage,(prefab,parent)=>UnityEngine.Object.Instantiate(prefab,parent));
         puzzle.Build(hud,layout,finish,null);
+        if (stage.skybox)
+        {
+            RenderSettings.skybox = stage.skybox;
+            puzzle.GetComponentInChildren<WorkshopMotor>().Eyes.clearFlags = CameraClearFlags.Skybox;
+        }
         return puzzle;
     }
 

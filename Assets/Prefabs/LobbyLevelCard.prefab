@@ -726,7 +726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de4db1b29c564c66889031ed5d7fecee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyLevelCard
-  stage: {fileID: 0}
+  scenePath: ""
   cover: {fileID: 0}
   preview: {fileID: 3933602619901288380}
   title: {fileID: 1867005660459800998}

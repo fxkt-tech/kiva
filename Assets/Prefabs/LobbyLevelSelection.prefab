@@ -1701,9 +1701,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2800000, guid: c0de9624bf1f424e840d041e33c22b91, type: 3}
     - target: {fileID: 4520216435248765586, guid: eae20d0b429925545ac1904c257173ff, type: 3}
-      propertyPath: stage
-      value: 
-      objectReference: {fileID: 6375902296894915995, guid: 2ceae77da279004428d0de29e4000e5c, type: 3}
+      propertyPath: scenePath
+      value: Assets/Scenes/Gameplay_01_SurfaceCourt.unity
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1851,9 +1851,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2800000, guid: 62954a2f3a6b4156922aa0dd77d0606a, type: 3}
     - target: {fileID: 4520216435248765586, guid: eae20d0b429925545ac1904c257173ff, type: 3}
-      propertyPath: stage
-      value: 
-      objectReference: {fileID: 8236107055009479130, guid: 01e545b9957baf84b9896535b39f8995, type: 3}
+      propertyPath: scenePath
+      value: Assets/Scenes/Gameplay_02_DomedArena.unity
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

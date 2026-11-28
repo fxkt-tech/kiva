@@ -7,7 +7,7 @@ public sealed class LobbyLevelSelection : MonoBehaviour
     [SerializeField] Button back;
     Button initialFocus;
 
-    public void Bind(Action close, Action<WorkshopLayout> play)
+    public void Bind(Action close, Action<int> play)
     {
         back.onClick.AddListener(() => close());
         foreach (var card in GetComponentsInChildren<LobbyLevelCard>(true))
