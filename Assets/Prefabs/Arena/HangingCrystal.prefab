@@ -148,19 +148,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Range
-      value: 13.3
+      value: 5.5
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Color.b
-      value: 0.67
+      value: 0.79
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Color.g
-      value: 0.84
+      value: 0.91
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Intensity
-      value: 20
+      value: 2.8
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Shadows.m_Bias

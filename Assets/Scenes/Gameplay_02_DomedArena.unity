@@ -20,9 +20,9 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.54, g: 0.61, b: 0.77, a: 1}
-  m_AmbientEquatorColor: {r: 0.45, g: 0.48, b: 0.6, a: 1}
-  m_AmbientGroundColor: {r: 0.34, g: 0.37, b: 0.48, a: 1}
+  m_AmbientSkyColor: {r: 0.46, g: 0.5, b: 0.71, a: 1}
+  m_AmbientEquatorColor: {r: 0.4, g: 0.385, b: 0.53, a: 1}
+  m_AmbientGroundColor: {r: 0.31, g: 0.28, b: 0.42, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -137,7 +137,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5806760580487768709, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.5
+      value: -18
       objectReference: {fileID: 0}
     - target: {fileID: 5806760580487768709, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -145,7 +145,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5806760580487768709, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 10.5
+      value: 10.8
       objectReference: {fileID: 0}
     - target: {fileID: 5806760580487768709, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -181,15 +181,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Color.b
-      value: 0.68
+      value: 0.62
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Color.g
-      value: 0.88
+      value: 0.89
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Intensity
-      value: 810
+      value: 1250
       objectReference: {fileID: 0}
     - target: {fileID: 7734429063835843362, guid: c9a15d781ebf0f74488aa24caa1ce7d4, type: 3}
       propertyPath: m_Shadows.m_Bias
